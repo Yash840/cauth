@@ -17,6 +17,7 @@ public class JwtSecretKey {
 
     private String appId;
 
+    @Column(length = 325)
     private String secret;
 
     public JwtSecretKey(String appId, String secret) {

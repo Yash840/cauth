@@ -33,8 +33,6 @@ public class ClientAuthService {
         return userService.isValidUser(email, appId, password);
     }
 
-
-
     public String login(UserLoginRequestDto dto){
         String email = dto.getEmail();
         String password = dto.getPassword();
@@ -59,8 +57,20 @@ public class ClientAuthService {
     public String identifyUser(UserIdentificationDto dto){
         String authId = userService.identifyUserByEmailAndAppId(dto.getEmail(), dto.getAppId());
         String to = dto.getEmail();
-        String sub = "Reset Password";
-        String body = issuePassResetCode(authId);
+        String sub = "Your C Auth Password Reset Code";
+
+        String body = """
+                Hi [User Name],
+                We received a request to reset the password for your C Auth account.
+                Enter the following recovery code to complete the reset:
+                %s
+                
+                This code will expire in [Time Frame, e.g., 10 minutes].
+                
+                If you did not request this password reset, please ignore this email. Your account is still secure.
+                
+                Thanks,
+                The C Auth Team""".formatted(issuePassResetCode(authId));
 
         mailService.sendMail(
                 to, sub, body

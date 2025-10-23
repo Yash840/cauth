@@ -1,19 +1,23 @@
-# Stage 1: build with Maven on JDK 25
-FROM maven:3.9.9-eclipse-temurin-25 AS build
-WORKDIR /workspace
-COPY pom.xml mvnw ./
-COPY .mvn .mvn
-RUN mvn -B -f pom.xml dependency:go-offline
+FROM maven:3.9.5-eclipse-temurin-21-alpine as builder
+
+WORKDIR /app
+
+COPY pom.xml .
+
+RUN mvn dependency:go-offline
 
 COPY src ./src
-RUN mvn -B -DskipTests package
 
-# Stage 2: runtime (slim JRE 25)
-FROM eclipse-temurin:25-jre-jammy
+RUN mvn clean package -DskipTests -B
+
+FROM eclipse-temurin:21-jre-alpine
+
 WORKDIR /app
-COPY docker/wait-for.sh /app/wait-for.sh
-RUN chmod +x /app/wait-for.sh
-COPY --from=build /workspace/target/*.jar /app/auth-service.jar
+
+ENV JAVA_TOOL_OPTIONS="-Djava.net.preferIPv4Stack=true"
+
+COPY --from=builder /app/target/*.jar app.jar
 
 EXPOSE 8085
-ENTRYPOINT ["/app/wait-for.sh", "postgres", "5432", "java", "-jar", "/app/auth-service.jar"]
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
