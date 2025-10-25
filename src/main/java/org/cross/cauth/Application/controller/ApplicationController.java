@@ -44,6 +44,18 @@ public class ApplicationController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/owner/{ownerEmail}")
+    public ResponseEntity<ApiResponse<List<ApplicationResponseDto>>> getAllApplicationByOwnerEmail(@PathVariable String ownerEmail) {
+        List<ApplicationResponseDto> applications = applicationService.getAllApplicationDtoByOwnerEmail(ownerEmail);
+        ApiResponse<List<ApplicationResponseDto>> response = ApiResponse.<List<ApplicationResponseDto>>builder()
+                .success(true)
+                .message("Application retrieved successfully")
+                .timestamp(LocalDateTime.now())
+                .data(applications)
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/token-sign-key/{appId}")
     public ResponseEntity<ApiResponse<String>> getJwtSecretByAppId(@PathVariable String appId) {
         String secret = applicationService.getApplicationJwtSecretString(appId);

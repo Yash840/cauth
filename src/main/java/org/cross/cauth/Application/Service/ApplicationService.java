@@ -60,6 +60,14 @@ public class ApplicationService {
         return ApplicationMapper.toResponseDto(app);
     }
 
+    @Transactional(readOnly = true)
+    public List<ApplicationResponseDto> getAllApplicationDtoByOwnerEmail(String ownerEmail){
+        return applicationRepository.findByOwnerEmail(ownerEmail)
+                .stream()
+                .map(ApplicationMapper::toResponseDto)
+                .toList();
+    }
+
     /**
      * @deprecated
      * Update appId details
