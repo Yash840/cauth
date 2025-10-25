@@ -6,10 +6,7 @@ import org.cross.cauth.ApiResponse;
 import org.cross.cauth.User.dto.CreateUserRequestDto;
 import org.cross.cauth.User.dto.UserLoginRequestDto;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -19,22 +16,22 @@ import java.time.LocalDateTime;
 public class ClientAuthController {
     private final ClientAuthService clientAuthTokenService;
 
-    @PostMapping("/login")
+    @PostMapping("/signInWithEmailAndPassword")
     public ResponseEntity<ApiResponse<String>> loginEndUser(
             @RequestBody UserLoginRequestDto dto
     ){
-        String authCode = clientAuthTokenService.login(dto);
+        String authToken = clientAuthTokenService.login(dto);
 
         ApiResponse<String> apiResponse = ApiResponse.<String>builder()
                 .success(true)
-                .message("auth code generated successfully")
-                .data(authCode)
+                .message("auth token generated successfully")
+                .data(authToken)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
     }
 
-    @PostMapping("/register")
+    @PostMapping("/signUpWithEmail")
     public ResponseEntity<ApiResponse<String>> registerEndUser(
             @RequestBody CreateUserRequestDto dto
     ){
@@ -49,11 +46,11 @@ public class ClientAuthController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @PostMapping("/a")
+    @PostMapping("/getAuthId")
     public ResponseEntity<ApiResponse<String>> getAuthIdEndUser(
             @RequestBody UserIdentificationDto dto
     ){
-        String authId = clientAuthTokenService.identifyUser(dto);
+        String authId = clientAuthTokenService.getUserAuthId(dto);
 
         ApiResponse<String> apiResponse = ApiResponse.<String>builder()
                 .success(true)
@@ -64,7 +61,22 @@ public class ClientAuthController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @PostMapping("/reset-password")
+    @GetMapping("/getResetPasswordCode/{authId}")
+    public ResponseEntity<ApiResponse<String>> getResetPasswordCode(
+            @PathVariable String authId
+    ){
+        String code = clientAuthTokenService.issuePassResetCode(authId);
+
+        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
+                .success(true)
+                .message("auth code generated successfully")
+                .data(code)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @PostMapping("/resetPassword")
     public ResponseEntity<ApiResponse<String>> getAuthIdEndUser(
             @RequestBody ResetPasswordRequestDto dto
     ){

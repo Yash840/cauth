@@ -39,7 +39,9 @@ public class ClientAuthService {
         String appId = dto.getAppId();
 
         if(validateUser(email, appId, password)){
-            return secretCodeService.generateAuthCode(email, appId);
+            SecretKey signInKey = jwtSecretService.getJwtSecret(appId);
+
+            return jwtService.generateTokenForClient(email, appId, signInKey);
         }
 
         throw new InvalidCredentialsException("Bad Credentials");
@@ -50,33 +52,13 @@ public class ClientAuthService {
         String appId = dto.getAppId();
 
         userService.createUser(dto);
+        SecretKey signInKey = jwtSecretService.getJwtSecret(appId);
 
-        return secretCodeService.generateAuthCode(email, appId);
+        return jwtService.generateTokenForClient(email, appId, signInKey);
     }
 
-    public String identifyUser(UserIdentificationDto dto){
-        String authId = userService.identifyUserByEmailAndAppId(dto.getEmail(), dto.getAppId());
-        String to = dto.getEmail();
-        String sub = "Your C Auth Password Reset Code";
-
-        String body = """
-                Hi [User Name],
-                We received a request to reset the password for your C Auth account.
-                Enter the following recovery code to complete the reset:
-                %s
-                
-                This code will expire in [Time Frame, e.g., 10 minutes].
-                
-                If you did not request this password reset, please ignore this email. Your account is still secure.
-                
-                Thanks,
-                The C Auth Team""".formatted(issuePassResetCode(authId));
-
-        mailService.sendMail(
-                to, sub, body
-        );
-
-        return authId;
+    public String getUserAuthId(UserIdentificationDto dto){
+        return userService.identifyUserByEmailAndAppId(dto.getEmail(), dto.getAppId());
     }
 
     public String issuePassResetCode(String authId){
